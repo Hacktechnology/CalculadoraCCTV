@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CCTV Calculator - Hacktechnology</title>
+    <style>
+        :root {
+            --bg: #0d1117;
+            --card-bg: #161b22;
+            --accent: #e3b341; /* Dorado/Amarillo para resaltar */
+            --blue-btn: #58a6ff;
+            --text-dim: #8b949e;
+            --border: #30363d;
+            --success: #3fb950;
+            --danger: #f85149;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--bg);
+            color: #c9d1d9;
+            margin: 0;
+            padding: 15px;
+        }
+
+        .container { max-width: 450px; margin: auto; }
+
+        /* HEADER PERSONALIZADO */
+        .brand-header {
+            text-align: center;
+            padding: 20px 0;
+            margin-bottom: 10px;
+        }
+
+        .brand-name {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: white;
+            letter-spacing: 1px;
+            margin: 0;
+        }
+
+        .brand-sub {
+            font-size: 0.8rem;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+        }
+
+        h3 { 
+            margin-top: 0; 
+            font-size: 1rem; 
+            color: white;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+
+        label { display: block; font-size: 0.85rem; color: var(--text-dim); margin-bottom: 5px; }
+
+        select, input {
+            width: 100%;
+            padding: 12px;
+            background: #0d1117;
+            border: 1px solid var(--border);
+            color: white;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            box-sizing: border-box;
+            font-size: 1rem;
+            outline: none;
+        }
+
+        .consumo-box {
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            margin-bottom: 15px;
+        }
+
+        .radio-group { display: flex; flex-direction: column; gap: 12px; margin-bottom: 15px; }
+        .radio-item { display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 0.9rem; }
+        input[type="radio"] { transform: scale(1.3); accent-color: var(--blue-btn); width: auto; margin: 0; }
+
+        .btn-main {
+            width: 100%;
+            padding: 18px;
+            background: var(--blue-btn);
+            border: none;
+            color: white;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            text-transform: uppercase;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+
+        .btn-reset {
+            background: #21262d;
+            color: white;
+            border: 1px solid var(--border);
+            padding: 8px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            margin-bottom: 5px;
+        }
+
+        .res-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #21262d;
+            font-size: 0.95rem;
+        }
+
+        .res-label { color: var(--text-dim); }
+        .res-val { font-weight: 500; color: white; text-align: right; }
+        
+        #status-banner {
+            margin-top: 15px;
+            padding: 18px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: bold;
+            display: none;
+            text-transform: uppercase;
+            font-size: 1.1rem;
+        }
+
+        .footer-note {
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            margin-top: 15px;
+            line-height: 1.4;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="brand-header">
+        <h1 class="brand-name">HACKTECHNOLOGY</h1>
+        <span class="brand-sub">Security & Network Solutions</span>
+    </div>
+
+    <div class="card">
+        <h3>Cable & Topología</h3>
+        <label>Calibre (AWG)</label>
+        <select id="awg">
+            <option value="0.084098">AWG 24 (Cat5e típico)</option>
+            <option value="0.06668" selected>AWG 23 (Cat6 típico)</option>
+        </select>
+
+        <label>Material del conductor</label>
+        <select id="material">
+            <option value="1">100% Cobre</option>
+            <option value="1.61">CCA (Cobre-Aluminio)</option>
+        </select>
+
+        <label>Pares para ALIMENTACIÓN (en paralelo)</label>
+        <select id="hilos">
+            <option value="1">1 par (2 hilos: + y -)</option>
+            <option value="2">2 pares (4 hilos: 2 en + y 2 en -)</option>
+            <option value="3" selected>3 pares (6 hilos: 3 en + y 3 en -)</option>
+        </select>
+        <p style="font-size: 0.72rem; color: var(--text-dim); margin-top: -10px;">El par restante se reserva para video con balun.</p>
+    </div>
+
+    <div class="card">
+        <h3>Distancia & Consumo</h3>
+        <div style="display: flex; gap: 10px;">
+            <div style="flex:2">
+                <label>Distancia</label>
+                <input type="number" id="dist" value="50">
+            </div>
+            <div style="flex:1">
+                <label>Unidad</label>
+                <select id="unidad"><option>m</option></select>
+            </div>
+        </div>
+
+        <label>Voltaje de la fuente (V)</label>
+        <input type="number" id="v_in" value="12">
+
+        <div class="consumo-box">
+            <div class="radio-group">
+                <label class="radio-item">
+                    <input type="radio" name="mode" value="amp" checked onchange="toggleMode()"> 
+                    Consumo por corriente (A)
+                </label>
+                <label class="radio-item">
+                    <input type="radio" name="mode" value="watt" onchange="toggleMode()"> 
+                    Consumo por potencia (W)
+                </label>
+            </div>
+            <label id="label_consumo">Corriente del equipo (A)</label>
+            <input type="number" id="cons_val" step="0.001" value="0.500">
+        </div>
+
+        <label>Voltaje mínimo en cámara (V)</label>
+        <input type="number" id="v_min" value="10.5">
+
+        <button class="btn-reset" onclick="resetForm()">Restablecer</button>
+    </div>
+
+    <button class="btn-main" onclick="calcular()">Calcular Resultados</button>
+
+    <div id="res-card" class="card" style="display:none; margin-top:20px;">
+        <h3>Resultados Detallados</h3>
+        <div id="res-body"></div>
+        <div id="status-banner"></div>
+        <p class="footer-note">Cálculos basados en Ley de Ohm para CCTV Analógico/IP.</p>
+    </div>
+</div>
+
+<script>
+    function toggleMode() {
+        const mode = document.querySelector('input[name="mode"]:checked').value;
+        const label = document.getElementById('label_consumo');
+        const input = document.getElementById('cons_val');
+        if(mode === 'amp') {
+            label.innerText = "Corriente del equipo (A)";
+            input.value = "0.500";
+        } else {
+            label.innerText = "Potencia del equipo (W)";
+            input.value = "6.00";
+        }
+    }
+
+    function resetForm() {
+        document.getElementById('dist').value = 50;
+        document.getElementById('v_in').value = 12;
+        document.querySelector('input[name="mode"][value="amp"]').click();
+        document.getElementById('v_min').value = 10.5;
+        document.getElementById('res-card').style.display = 'none';
+    }
+
+    function calcular() {
+        const selAWG = document.getElementById('awg');
+        const rBase = parseFloat(selAWG.value);
+        const textAWG = selAWG.options[selAWG.selectedIndex].text.split(' ')[1];
+        
+        const selMat = document.getElementById('material');
+        const fMat = parseFloat(selMat.value);
+        const textMat = selMat.options[selMat.selectedIndex].text.split(' ')[0];
+
+        const nPares = parseInt(document.getElementById('hilos').value);
+        const d = parseFloat(document.getElementById('dist').value);
+        const vF = parseFloat(document.getElementById('v_in').value);
+        const vMin = parseFloat(document.getElementById('v_min').value);
+        
+        let amp;
+        const mode = document.querySelector('input[name="mode"]:checked').value;
+        const val = parseFloat(document.getElementById('cons_val').value);
+        amp = (mode === 'watt') ? (val / vF) : val;
+
+        const rLazo = (rBase * fMat / nPares) * d * 2;
+        const cV = amp * rLazo;
+        const vEq = vF - cV;
+        const pW = cV * amp;
+        const perc = (cV / vF) * 100;
+        
+        const dMaxM = (vF - vMin) / (amp * (rBase * fMat / nPares) * 2);
+        const dMaxFt = dMaxM * 3.28084;
+
+        document.getElementById('res-card').style.display = 'block';
+        const resBody = document.getElementById('res-body');
+        const banner = document.getElementById('status-banner');
+
+        const rows = [
+            ["AWG", "#" + textAWG],
+            ["Material", textMat],
+            ["Pares en paralelo", nPares],
+            ["Distancia (ida)", d.toFixed(2) + " m"],
+            ["Resistencia de lazo", rLazo.toFixed(4) + " Ω"],
+            ["Corriente estimada", amp.toFixed(3) + " A"],
+            ["Caída de voltaje", cV.toFixed(3) + " V"],
+            ["Voltaje al equipo", vEq.toFixed(3) + " V"],
+            ["Pérdida en el cable", pW.toFixed(3) + " W"],
+            ["Distancia máxima (≥ Vmin)", `${dMaxM.toFixed(2)} m (${dMaxFt.toFixed(2)} ft)`]
+        ];
+
+        resBody.innerHTML = rows.map(r => `
+            <div class="res-row">
+                <span class="res-label">${r[0]}</span>
+                <span class="res-val">${r[1]}</span>
+            </div>
+        `).join('');
+
+        banner.style.display = 'block';
+        if (vEq >= vMin) {
+            banner.style.backgroundColor = 'var(--success)';
+            banner.style.color = 'white';
+            banner.innerHTML = `✔ OPERACIÓN ÓPTIMA (${perc.toFixed(1)}% CAÍDA)`;
+        } else {
+            banner.style.backgroundColor = 'var(--danger)';
+            banner.style.color = 'white';
+            banner.innerHTML = `⚠ VOLTAJE INSUFICIENTE (${perc.toFixed(1)}% CAÍDA)`;
+        }
+
+        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+    }
+</script>
+</body>
+</html>
