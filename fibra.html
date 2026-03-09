@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fiber Link Budget - Hacktechnology</title>
+    <style>
+        :root {
+            --bg: #0d1117;
+            --card-bg: #161b22;
+            --accent: #e3b341;
+            --blue-btn: #58a6ff;
+            --text-dim: #8b949e;
+            --border: #30363d;
+            --success: #3fb950;
+            --danger: #f85149;
+        }
+
+        body {
+            font-family: -apple-system, sans-serif;
+            background-color: var(--bg);
+            color: #c9d1d9;
+            margin: 0;
+            padding: 15px;
+        }
+
+        .container { max-width: 450px; margin: auto; }
+
+        .brand-header { text-align: center; padding: 20px 0; }
+        .brand-name { font-size: 1.6rem; font-weight: 800; color: white; margin: 0; }
+        .brand-sub { font-size: 0.75rem; color: var(--accent); text-transform: uppercase; letter-spacing: 2px; }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+        }
+
+        h3 { margin-top: 0; font-size: 1rem; color: white; border-bottom: 1px solid var(--border); padding-bottom: 10px; margin-bottom: 15px; }
+        label { display: block; font-size: 0.85rem; color: var(--text-dim); margin-bottom: 5px; }
+
+        select, input {
+            width: 100%;
+            padding: 12px;
+            background: #0d1117;
+            border: 1px solid var(--border);
+            color: white;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            box-sizing: border-box;
+        }
+
+        .btn-main {
+            width: 100%;
+            padding: 18px;
+            background: var(--blue-btn);
+            border: none;
+            color: white;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            text-transform: uppercase;
+        }
+
+        .res-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #21262d; }
+        .res-label { color: var(--text-dim); }
+        .res-val { font-weight: 500; color: white; }
+
+        #status-banner {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: bold;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="brand-header">
+        <h1 class="brand-name">HACKTECHNOLOGY</h1>
+        <span class="brand-sub">Fiber Optics Division</span>
+    </div>
+
+    <div class="card">
+        <h3>Parámetros del Enlace</h3>
+        
+        <label>Longitud de onda (nm)</label>
+        <select id="wave">
+            <option value="0.35">1310 nm (Típico Single-mode)</option>
+            <option value="0.22">1550 nm (Larga distancia)</option>
+        </select>
+
+        <label>Distancia total (Km)</label>
+        <input type="number" id="km" value="1" step="0.1">
+
+        <label>Número de empalmes (fusión)</label>
+        <input type="number" id="splices" value="2">
+
+        <label>Número de conectores (parejas)</label>
+        <input type="number" id="connectors" value="2">
+    </div>
+
+    <div class="card">
+        <h3>Potencia de Equipos</h3>
+        <label>Potencia de salida TX (dBm)</label>
+        <input type="number" id="tx_pwr" value="0">
+
+        <label>Sensibilidad RX mínima (dBm)</label>
+        <input type="number" id="rx_sens" value="-25">
+    </div>
+
+    <button class="btn-main" onclick="calcFiber()">Calcular Atenuación</button>
+
+    <div id="res-card" class="card" style="display:none; margin-top:20px;">
+        <h3>Presupuesto de Potencia</h3>
+        <div id="res-body"></div>
+        <div id="status-banner"></div>
+    </div>
+</div>
+
+<script>
+    function calcFiber() {
+        const att_km = parseFloat(document.getElementById('wave').value);
+        const dist = parseFloat(document.getElementById('km').value);
+        const n_splices = parseInt(document.getElementById('splices').value);
+        const n_conn = parseInt(document.getElementById('connectors').value);
+        const tx = parseFloat(document.getElementById('tx_pwr').value);
+        const rx_limit = parseFloat(document.getElementById('rx_sens').value);
+
+        // Constantes estándar: 0.1dB por fusión, 0.5dB por conector, 3dB de margen de seguridad
+        const loss_fiber = att_km * dist;
+        const loss_splices = n_splices * 0.1;
+        const loss_conn = n_conn * 0.5;
+        const margin = 3.0;
+
+        const total_loss = loss_fiber + loss_splices + loss_conn + margin;
+        const rx_estimated = tx - total_loss;
+
+        document.getElementById('res-card').style.display = 'block';
+        const resBody = document.getElementById('res-body');
+        const banner = document.getElementById('status-banner');
+
+        const rows = [
+            ["Atenuación fibra", loss_fiber.toFixed(2) + " dB"],
+            ["Pérdida empalmes", loss_splices.toFixed(2) + " dB"],
+            ["Pérdida conectores", loss_conn.toFixed(2) + " dB"],
+            ["Margen seguridad", margin.toFixed(2) + " dB"],
+            ["Atenuación Total", total_loss.toFixed(2) + " dB"],
+            ["Potencia en RX", rx_estimated.toFixed(2) + " dBm"]
+        ];
+
+        resBody.innerHTML = rows.map(r => `
+            <div class="res-row">
+                <span class="res-label">${r[0]}</span>
+                <span class="res-val">${r[1]}</span>
+            </div>
+        `).join('');
+
+        banner.style.display = 'block';
+        if (rx_estimated > rx_limit) {
+            banner.style.backgroundColor = 'var(--success)';
+            banner.innerHTML = "✔ ENLACE VIABLE";
+        } else {
+            banner.style.backgroundColor = 'var(--danger)';
+            banner.innerHTML = "⚠ ENLACE NO VIABLE (BAJA POTENCIA)";
+        }
+    }
+</script>
+</body>
+</html>
